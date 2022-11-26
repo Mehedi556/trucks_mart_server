@@ -3,63 +3,44 @@ const app = express();
 const cors = require('cors');
 require('dotenv').config();
 const { MongoClient, ServerApiVersion } = require('mongodb');
-const port = process.env.PORT || 5000 ;
+const port = process.env.PORT || 5000;
 
 //Middleware
-app.use(cors())
+app.use(cors());
 app.use(express.json());
 
-
-
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASSWORD}@cluster0.emwzks8.mongodb.net/?retryWrites=true&w=majority`;
-console.log(uri);
-const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true, serverApi: ServerApiVersion.v1 });
 
-async function run(){
-    try{
+const client = new MongoClient(uri, {
+  useNewUrlParser: true,
+  useUnifiedTopology: true,
+  serverApi: ServerApiVersion.v1,
+});
 
-        
+async function run() {
+  try {
+    const usersCollection = client.db('trucksMart').collection('users');
 
+    app.post('/users', async (req, res) => {
+      const user = req.body;
+      const result = await usersCollection.insertOne(user);
+      res.send(result);
+    });
 
-
-
-
-
-
-
-    }
-    finally{
-
-    }
+    app.get('/users', async (req, res) => {
+      const query = {};
+      const users = await usersCollection.find(query).toArray();
+      res.send(users);
+    });
+  } finally {
+  }
 }
+run().catch(console.log);
 
+app.get('/', (req, res) => {
+  res.send('Server site server is running');
+});
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-app.get('/' , (req , res) => {
-    res.send('Server site server is running');
-})
-
-app.listen(port , () => {
-    console.log(`Doctors portal running on port ${port}`)
-})
+app.listen(port, () => {
+  console.log(`Server site server running on port ${port}`);
+});
