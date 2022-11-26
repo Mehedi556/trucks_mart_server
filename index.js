@@ -20,6 +20,10 @@ const client = new MongoClient(uri, {
 async function run() {
   try {
     const usersCollection = client.db('trucksMart').collection('users');
+    const categoriesCollection = client.db('trucksMart').collection('categories');
+    const productDetailsCollection = client.db('trucksMart').collection('productDetails');
+
+
 
     app.post('/users', async (req, res) => {
       const user = req.body;
@@ -27,11 +31,39 @@ async function run() {
       res.send(result);
     });
 
+
+
+
+
+
     app.get('/users', async (req, res) => {
       const query = {};
       const users = await usersCollection.find(query).toArray();
       res.send(users);
     });
+
+
+
+    app.get('/categories' , async (req , res) => {
+        const query = {};
+        const categories = await categoriesCollection.find(query).toArray();
+        res.send(categories);
+    })
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
   } finally {
   }
 }
