@@ -32,7 +32,12 @@ async function run() {
     });
 
 
-
+    
+    app.post('/productDetails', async (req, res) => {
+      const productDetails = req.body;
+      const result = await productDetailsCollection.insertOne(productDetails);
+      res.send(result);
+    });
 
 
 
