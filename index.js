@@ -20,10 +20,12 @@ const client = new MongoClient(uri, {
 async function run() {
   try {
     const usersCollection = client.db('trucksMart').collection('users');
-    const categoriesCollection = client.db('trucksMart').collection('categories');
-    const productDetailsCollection = client.db('trucksMart').collection('productDetails');
-
-
+    const categoriesCollection = client
+      .db('trucksMart')
+      .collection('categories');
+    const productDetailsCollection = client
+      .db('trucksMart')
+      .collection('productDetails');
 
     app.post('/users', async (req, res) => {
       const user = req.body;
@@ -31,15 +33,18 @@ async function run() {
       res.send(result);
     });
 
-
-    
     app.post('/productDetails', async (req, res) => {
       const productDetails = req.body;
       const result = await productDetailsCollection.insertOne(productDetails);
       res.send(result);
     });
 
-
+    app.get('/productDetails/:id', async (req, res) => {
+      const id = req.params.id;
+      const query = { category_id: id };
+      const details = await productDetailsCollection.find(query).toArray();
+      res.send(details);
+    });
 
     app.get('/users', async (req, res) => {
       const query = {};
@@ -47,15 +52,11 @@ async function run() {
       res.send(users);
     });
 
-
-
-    app.get('/categories' , async (req , res) => {
-        const query = {};
-        const categories = await categoriesCollection.find(query).toArray();
-        res.send(categories);
-    })
-
-
+    app.get('/categories', async (req, res) => {
+      const query = {};
+      const categories = await categoriesCollection.find(query).toArray();
+      res.send(categories);
+    });
 
 
 
