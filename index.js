@@ -39,6 +39,13 @@ async function run() {
       res.send(result);
     });
 
+    app.get('/productDetails' , async (req , res) => {
+      const email = req.query.email;
+      const query = { user_email: email };
+      const products = await productDetailsCollection.find(query).toArray();
+      res.send(products);
+    })
+
     app.get('/productDetails/:id', async (req, res) => {
       const id = req.params.id;
       const query = { category_id: id };
