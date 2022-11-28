@@ -3,6 +3,7 @@ const app = express();
 const cors = require('cors');
 require('dotenv').config();
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
+const jwt = require('jsonwebtoken');
 const port = process.env.PORT || 5000;
 
 //Middleware
@@ -17,21 +18,58 @@ const client = new MongoClient(uri, {
   serverApi: ServerApiVersion.v1,
 });
 
+
+// function verifyJWT(req , res , next){
+//   const authHeader = req.headers.authorization;
+//   if(!authHeader){
+//     return res.status(401).send('unauthorised access');
+//   }
+//   const token = authHeader.split(' ')[1];
+//   jwt.verify(token , process.env.ACCESS_TOKEN , function(err , decoded){
+//     if(error){
+//       return res.status(403).send({message: 'Forbidden'})
+//     }
+//     req.decoded = decoded;
+//     next();
+//   })
+// }
+
+
+
+
+
+
+
+
+
 async function run() {
   try {
     const usersCollection = client.db('trucksMart').collection('users');
-    const categoriesCollection = client
-      .db('trucksMart')
-      .collection('categories');
-    const productDetailsCollection = client
-      .db('trucksMart')
-      .collection('productDetails');
+
+
+    const categoriesCollection = client.db('trucksMart').collection('categories');
+
+
+    const productDetailsCollection = client.db('trucksMart').collection('productDetails');
+
+
 
     app.post('/users', async (req, res) => {
       const user = req.body;
       const result = await usersCollection.insertOne(user);
       res.send(result);
     });
+
+
+    app.get('/users/admin/:email' , async (req , res) => {
+      const email = req.params.email;
+      const query = { email };
+      const user = await usersCollection.findOne(query);
+      res.send({ isAdmin: user?.role === 'Admin' });
+    })
+
+
+
 
     app.delete('/members/:id' , async(req , res) => {
       const id = req.params.id;
@@ -40,18 +78,31 @@ async function run() {
       res.send(result);
     })
 
+
+
+
     app.post('/productDetails', async (req, res) => {
       const productDetails = req.body;
       const result = await productDetailsCollection.insertOne(productDetails);
       res.send(result);
     });
 
-    app.get('/productDetails' , async (req , res) => {
+
+
+
+    app.get('/productDetails' ,  async (req , res) => {
       const email = req.query.email;
+      // const decodedEmail = req.decoded.email;
+      // if(email !== decodedEmail){
+      //   return res.status(403).send({message: 'Forbidden'});
+      // }
       const query = { user_email: email };
       const products = await productDetailsCollection.find(query).toArray();
       res.send(products);
     })
+
+
+
 
     app.get('/productDetails/:id', async (req, res) => {
       const id = req.params.id;
@@ -60,11 +111,33 @@ async function run() {
       res.send(details);
     });
 
+
+
+
     app.get('/users', async (req, res) => {
       const query = {};
       const users = await usersCollection.find(query).toArray();
       res.send(users);
     });
+
+
+
+
+    // app.get('/jwt' , async (req , res) => {
+    //   const email = req.query.email;
+    //   const query = {email: email};
+    //   const user = await usersCollection.findOne(query);
+    //   if(user){
+    //     const token = jwt.sign({email} , process.env.ACCESS_TOKEN, {expiresIn: '1h'})
+    //     return res.send({accessToken: token})
+    //   }
+      
+    //   res.status(403).send({accessToken: ''})
+    // })
+
+
+
+
 
     app.get('/categories', async (req, res) => {
       const query = {};
