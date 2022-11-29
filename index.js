@@ -53,6 +53,12 @@ async function run() {
     const productDetailsCollection = client.db('trucksMart').collection('productDetails');
 
 
+    const advertiseCollection = client.db('trucksMart').collection('advertiseItems');
+
+
+    const ordersCollection = client.db('trucksMart').collection('myOrders');
+
+
 
     app.post('/users', async (req, res) => {
       const user = req.body;
@@ -156,14 +162,30 @@ async function run() {
       res.send(categories);
     });
 
+// ----------------------------------------------------------------------
+
+app.post('/advertise' , async (req , res) => {
+  const advertiseItem = req.body;
+  const advertise = await advertiseCollection.insertOne(advertiseItem);
+  res.send(advertise);
+})
 
 
+app.get('/advertise' , async (req , res) => {
+  const email = req.query.email;
+  const query = {user_email: email};
+  const items = await advertiseCollection.find(query).toArray();
+  res.send(items);
+})
 
 
+// -----------------------------------------------------------------------------
 
-
-
-
+app.post('/myorders' , async (req , res) => {
+  const ordersItem = req.body;
+  const orders = await ordersCollection.insertOne(ordersItem);
+  res.send(orders);
+})
 
 
 
