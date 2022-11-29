@@ -2,6 +2,7 @@ const express = require('express');
 const app = express();
 const cors = require('cors');
 require('dotenv').config();
+const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const jwt = require('jsonwebtoken');
 const port = process.env.PORT || 5000;
@@ -184,8 +185,37 @@ app.get('/advertise' , async (req , res) => {
 app.post('/myorders' , async (req , res) => {
   const ordersItem = req.body;
   const orders = await ordersCollection.insertOne(ordersItem);
+  console.log(orders)
   res.send(orders);
 })
+
+
+app.get('/myorders' , async (req , res) => {
+  const email = req.query.email;
+  const query = {email: email};
+  const order = await ordersCollection.find(query).toArray();
+  res.send(order);
+})
+
+// -----------------------------------------------------------
+
+app.get('/orders/:id' , async (req , res) => {
+  const id = req.params.id;
+  const query = { _id: ObjectId(id) };
+  const order = await ordersCollection.findOne(query);
+  res.send(order);
+})
+
+
+// -----------------------------------------------------
+
+
+
+
+
+
+
+
 
 
 
