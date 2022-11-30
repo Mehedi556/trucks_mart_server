@@ -60,6 +60,9 @@ async function run() {
     const ordersCollection = client.db('trucksMart').collection('myOrders');
 
 
+    const paymentsCollection = client.db('trucksMart').collection('payments');
+
+
 
     app.post('/users', async (req, res) => {
       const user = req.body;
@@ -67,6 +70,48 @@ async function run() {
       res.send(result);
     });
 
+
+
+
+    app.put('/users/verify/:email' , async (req , res) => {
+      const email = req.params.email;
+      const filter = { user_email: email };
+      const options = { upsert: true };
+      const updatedDoc = {
+        $set: {
+          status: 'verified'
+        }
+      }
+      const result = await productDetailsCollection.updateOne(filter , updatedDoc , options);
+      res.send(result);
+      
+      
+    })
+
+
+    // ---------------------------------
+// serious
+
+// app.get('/users/verified/:email' , async (req , res) => {
+//   const email = req.params.email;
+//   const query = { email };
+//   const user = await usersCollection.findOne(query);
+//   res.send({ isVerified: user?.role === 'Admin' });
+// })
+
+
+
+
+
+
+
+
+
+
+    
+
+
+    
 
     app.get('/users/admin/:email' , async (req , res) => {
       const email = req.params.email;
@@ -84,6 +129,18 @@ async function run() {
       const query = { email };
       const user = await usersCollection.findOne(query);
       res.send({ isSeller: user?.role === 'Seller' });
+    })
+
+
+
+
+
+
+    app.get('/users/buyer/:email' , async (req , res) => {
+      const email = req.params.email;
+      const query = { email };
+      const user = await usersCollection.findOne(query);
+      res.send({ isBuyer: user?.role === 'Buyer' });
     })
 
 
@@ -132,11 +189,27 @@ async function run() {
 
 
 
-    app.get('/users', async (req, res) => {
-      const query = {};
+    app.get('/sellers', async (req, res) => {
+      const query = {role: 'Seller'};
       const users = await usersCollection.find(query).toArray();
       res.send(users);
     });
+
+
+
+    app.get('/buyers', async (req, res) => {
+      const query = {role: 'Buyer'};
+      const users = await usersCollection.find(query).toArray();
+      res.send(users);
+    });
+
+
+  
+
+
+
+
+
 
 
 
@@ -163,7 +236,7 @@ async function run() {
       res.send(categories);
     });
 
-// ----------------------------------------------------------------------
+
 
 app.post('/advertise' , async (req , res) => {
   const advertiseItem = req.body;
@@ -180,7 +253,7 @@ app.get('/advertise' , async (req , res) => {
 })
 
 
-// -----------------------------------------------------------------------------
+
 
 app.post('/myorders' , async (req , res) => {
   const ordersItem = req.body;
@@ -197,7 +270,7 @@ app.get('/myorders' , async (req , res) => {
   res.send(order);
 })
 
-// -----------------------------------------------------------
+
 
 app.get('/orders/:id' , async (req , res) => {
   const id = req.params.id;
@@ -207,12 +280,40 @@ app.get('/orders/:id' , async (req , res) => {
 })
 
 
-// -----------------------------------------------------
 
 
+app.post('/create-payment-intent' , async (req , res) => {
+  const orders = req.body;
+  const price = orders.price;
+  const amount = price * 100;
+
+  const paymentIntent = await stripe.paymentIntents.create({
+    currency: 'usd',
+    amount: amount,
+    "payment_method_types": [
+      "card"
+    ]
+  });
+  res.send({
+    clientSecret: paymentIntent.client_secret,
+  });
+})
 
 
-
+app.post('/payments' , async (req , res) => {
+  const payment = req.body;
+  const result = await paymentsCollection.insertOne(payment);
+  const id = payment.ordersId;
+  const filter = {_id:ObjectId(id)};
+  const updatedDoc = {
+    $set: {
+      paid: true,
+      transactionId: payment.transactionId
+    }
+  }
+  const updateResult = await ordersCollection.updateOne(filter , updatedDoc )
+  res.send(result);
+})
 
 
 
